@@ -123,8 +123,9 @@ class ServiceMapper(MapperBase):
                 value.service = service
                 LbMapper.update(value)
 
+
             elif key in service_record.__dict__:
-                service_record.__dict__[key] = value
+                service_record.__setattr__(key, value)
 
         session = cls.get_session()
         session.add(service_record)
@@ -199,7 +200,7 @@ class AppMapper(MapperBase):
                 continue
 
             elif key in app_record.__dict__:
-                app_record.__dict__[key] = value
+                app_record.__setattr__(key, value)
 
         session = cls.get_session()
         session.add(app_record)
@@ -214,6 +215,7 @@ class LbMapper(MapperBase):
             service = ServiceMapper.convert_record_to_domain(lb_record.service)
         app = AppMapper.convert_record_to_domain(lb_record.app, service=service)
         lb = Lb(spec.name, spec, app, service)
+        lb.address = lb_record.address
         return lb
 
     @classmethod
@@ -269,7 +271,7 @@ class LbMapper(MapperBase):
                 lb_record.appno = appno
 
             elif key in lb_record.__dict__:
-                lb_record.__dict__[key] = value
+                lb_record.__setattr__(key, value)
 
         session = cls.get_session()
         session.add(lb_record)

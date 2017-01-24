@@ -117,7 +117,6 @@ autoDelete: True
 
 
         lb = Lb(name="push7-test3", spec=spec, app=app, service=service)
-
         # Insert
         LbMapper.insert(lb)
         names = [s.name for s in LbMapper.list()]
@@ -130,6 +129,18 @@ autoDelete: True
         get_lb = LbMapper.get('push7-test3')
         assert get_lb.name == lb.name
         assert type(get_lb) is Lb
+
+        get_lb.address = "test"
+
+        #Update
+        LbMapper.update(get_lb)
+
+        # Get
+        get_updated_lb = LbMapper.get('push7-test3')
+        assert get_updated_lb.name == lb.name
+        assert type(get_updated_lb) is Lb
+        assert get_updated_lb.address == "test"
+
 
         # Delete
         LbMapper.delete(lb)
