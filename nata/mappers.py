@@ -97,6 +97,11 @@ class ServiceMapper(MapperBase):
     @classmethod
     def insert(cls, service):
         spec = spec=service.spec.to_json()
+
+        # check unique constraint
+        if cls.services().filter_by(name=service.name).count() > 0:
+            raise Exception('A service with the same name already exists.')
+
         service_record = ServiceRecord(name=service.name, spec=spec)
         session = cls.get_session()
         session.add(service_record)
@@ -176,6 +181,11 @@ class AppMapper(MapperBase):
     @classmethod
     def insert(cls, app):
         spec = app.spec.to_json()
+
+        # check unique constraint
+        if cls.apps().filter_by(name=app.name).count() > 0:
+            raise Exception('A app with the same name already exists.')
+
         service_record = cls.services().filter_by(name=app.service.name).first()
         app_record = AppRecord(name=app.name, spec=spec, zone=app.spec.zone, serviceno=service_record.no)
         session = cls.get_session()

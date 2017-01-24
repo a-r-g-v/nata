@@ -13,7 +13,7 @@ Base = declarative_base()
 class ServiceRecord(Base):
     __tablename__ = "service"
     no = Column(Integer, primary_key=True)
-    name = Column(String(160), unique=True, nullable=False)
+    name = Column(String(160), unique=False, nullable=False)
     spec = Column(Text, nullable=False)
     created_date = Column(DateTime, default=datetime.datetime.now(), nullable=False)
     archived_date =Column(DateTime, nullable=True)
@@ -37,7 +37,7 @@ class LbRecord(Base):
 class AppRecord(Base):
     __tablename__ = "app"
     no = Column(Integer, primary_key=True)
-    name = Column(String(160), unique=True, nullable=False)
+    name = Column(String(160), unique=False, nullable=False)
     spec = Column(Text, nullable=False)
     zone = Column(String(160), nullable=False)
     created_date = Column(DateTime, default=datetime.datetime.now(), nullable=False)
