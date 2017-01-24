@@ -71,11 +71,11 @@ class ServiceUseCase(object):
     @classmethod
     def list(cls):
         services = ServiceMapper.list()
-        print("\t\t".join(['name', 'primary_app_name', 'address']))
+        print("\t\t\t\t".join(['name', 'primary_app_name', 'address']))
 
         for service in services:
             address = "" if service.lb.address is None else service.lb.address
-            print("\t\t".join([service.name, service.get_primary_app().name, address]))
+            print("\t\t\t\t".join([service.name, service.get_primary_app().name, address]))
         return services
 
     @classmethod
@@ -130,11 +130,11 @@ class AppUseCase(object):
     @classmethod
     def list(cls):
         apps = AppMapper.list()
-        print("\t\t".join(['name', 'service', 'is_primary']))
+        print("\t\t\t\t".join(['name', 'service', 'is_primary']))
 
         for app in apps:
             is_primary = 'Yes' if app.primary else 'No'
-            print("\t\t".join([app.name, app.service.name, is_primary]))
+            print("\t\t\t\t".join([app.name, app.service.name, is_primary]))
 
         return apps
 
