@@ -107,6 +107,12 @@ class ServiceUseCase(object):
 
 class AppUseCase(object):
     @classmethod
+    def rolling(cls, name):
+        app = AppMapper.get(app_name)
+        app_resource = AppResource(app)
+        app_resource.rolling()
+
+    @classmethod
     def create(cls, spec):
         service = ServiceMapper.get(spec.name)
         if service is None:

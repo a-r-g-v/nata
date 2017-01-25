@@ -113,6 +113,22 @@ class AppResource(object):
         self.name = app.name
         self.spec = self.app.spec
 
+    def rolling(self):
+        def wait_for_satisfaction_health(health):
+            pass
+
+        current_instances = None
+
+        current_health = None
+
+        for instance in current_instances:
+            delete_instance(instance)
+            wait_for_operation()
+
+            wait_for_satisfaction_health(current_health)
+
+
+
     def remote_exist_resources(self):
         result = []
 
