@@ -32,6 +32,7 @@ enableCDN: False
 ```
 nata app create <yaml-name>
 nata app list 
+nata app rolling <app-name>
 nata app delete <app-name>
 nata service create <yaml-name>
 nata service delete <lb-name>
