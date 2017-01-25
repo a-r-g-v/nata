@@ -1,8 +1,9 @@
+from prettytable import PrettyTable
 from .mappers import AppMapper, ServiceMapper, LbMapper
 from .domains import Spec, Service, App, Lb
 from .resources import LbResource, AppResource
 from .drivers import *
-import sys
+import sys 
 import csv
 
 
@@ -71,11 +72,14 @@ class ServiceUseCase(object):
     @classmethod
     def list(cls):
         services = ServiceMapper.list()
-        print("\t\t\t\t".join(['name', 'primary_app_name', 'address']))
+        fileds = ['name', 'primary_app_name', 'address', 'created_date']
+        table = PrettyTable(fileds)
 
         for service in services:
             address = "" if service.lb.address is None else service.lb.address
-            print("\t\t\t\t".join([service.name, service.get_primary_app().name, address]))
+            table.add_row([service.name, service.get_primary_app().name, address, service.created_date])
+
+        print(table)
         return services
 
     @classmethod
@@ -130,12 +134,14 @@ class AppUseCase(object):
     @classmethod
     def list(cls):
         apps = AppMapper.list()
-        print("\t\t\t\t".join(['name', 'service', 'is_primary']))
+        fields = ['name', 'service', 'primary', 'image', 'created_date']
+        table = PrettyTable(fields)
 
         for app in apps:
             is_primary = 'Yes' if app.primary else 'No'
-            print("\t\t\t\t".join([app.name, app.service.name, is_primary]))
+            table.add_row([app.name, app.service.name, is_primary, app.spec.image, app.created_date])
 
+        print(table)
         return apps
 
 class DebugUseCase(object):

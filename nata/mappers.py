@@ -53,7 +53,8 @@ class ServiceMapper(MapperBase):
     @classmethod
     def convert_record_to_domain(cls, service_record):
         spec = Spec(spec=json.loads(service_record.spec))
-        service =  Service(service_record.name, spec)
+        service = Service(service_record.name, spec)
+        service._created_date = service_record.created_date
         if service_record.apps is not None or len(service_record.apps) > 0:
             for app_record in service_record.apps:
                 service.set_app(AppMapper.convert_record_to_domain(app_record, service=service))
@@ -146,6 +147,7 @@ class AppMapper(MapperBase):
         if service is None:
             service = ServiceMapper.convert_record_to_domain(app_record.service)
         app = App(app_record.name, spec, service)
+        app._created_date = app_record.created_date
         if app_record.lb is not None:
             app.primary = True
         return app
