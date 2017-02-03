@@ -164,6 +164,14 @@ def exist_backend_service(compute, name, data):
 def get_backend_service(compute, data, name):
     return compute.backendServices().get(project=data.project, backendService=name).execute()
 
+def get_health_in_backend_service(compute, app_name, lb_name, data):
+    instance_groups = "https://www.googleapi.com/compute/v1/projects/{project}/zones/{zone}/instanceGroups/{name}".format(project=data.project, zone=data.zone, name=app_name)
+    body = {
+    'group' : instance_groups
+            }
+    return compute.backendServices().getHealth(project=data.project, backendService=lb_name, body=body).execute()
+
+
 def update_backend_service(compute, data, app_name, lb_name):
     """
         data : application data
@@ -211,6 +219,11 @@ def create_instance_template(compute, name, data):
 def delete_instance_template(compute, name, data):
     return compute.instanceTemplates().delete(project=data.project, instanceTemplate=name).execute()
 
+def delete_instance(compute, name, data):
+    return compute.instances().delete(project=data.project, zone=data.zone, instance=name).execute()
+
+def list_managed_instance(compute, name, data):
+    return compute.instanceGroupManagers().listManagedInstances(project=data.project, zone=data.zone, instanceGroupManager=name).execute()
 
 def exist_instance_template(compute, name, data):
     return exist_equals_name_in_item(compute, name, data, list_instance_template)
@@ -269,3 +282,4 @@ def exist_equals_name_in_item(compute, name, data, list_func):
             return True
     else:
         return False
+

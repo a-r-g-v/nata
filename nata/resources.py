@@ -117,16 +117,15 @@ class AppResource(object):
         def wait_for_satisfaction_health(health):
             pass
 
-        current_instances = None
+        current_instances = list_managed_instance(compute, self.name, self.spec)
 
         current_health = None
 
         for instance in current_instances:
-            delete_instance(instance)
-            wait_for_operation()
+            op = delete_instance(compute, instance, self.spec)
+            wait_for_operation(compute, self.spec.project, self.spec.zone, op["name"])
 
             wait_for_satisfaction_health(current_health)
-
 
 
     def remote_exist_resources(self):
