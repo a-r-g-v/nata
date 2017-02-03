@@ -50,55 +50,13 @@ autoDelete: True
         app_resorces = AppResource(app)
         lb_resorces = LbResource(app, lb)
 
-        """
         app_resorces.create()
         lb_resorces.create()
-        """
-        
-        def count_stable_instances(app, lb):
-            health_status = get_health_in_backend_service(compute, app.name, lb.name, spec)
-            if 'healthStatus' not in health_status:
-                raise Exception
-            cnt = 0
-            for health in health_status['healthStatus']:
-                if health['healthState'] == 'HEALTHY':
-                    cnt += 1
-                else:
-                    print 'not stable', health
-            return cnt
 
-        def wait_for_stable(app, lb, desire_stable_count):
-            while count_stable_instances(app, lb) != desire_stable_count:
-                print 'wait some maneged instances until stable... desire: %d' % desire_stable_count
-                import time
-                time.sleep(3)
+        import time
 
+        time.sleep(30)
+        app_resorces.rolling(lb)
 
-
-        """
-        # wait some managed instances until stable
-        loop = True 
-        while loop:
-            loop = False
-            result = list_managed_instance(compute, app.name, spec)
-            if 'managedInstances' not in result:
-                raise Exception
-            for instance in result['managedInstances']:
-                if instance['currentAction'] != 'NONE':
-                    loop = True
-                    import time
-                    time.sleep(3)
-        """
-
-        result = get_health_in_backend_service(compute, app.name, lb.name, spec)
-        print result
-        desire_stable_count = count_stable_instances(app, lb)
-        if 'healthStatus' not in result:
-            raise Exception
-        for instance in result['healthStatus']:
-            wait_for_stable(app, lb, desire_stable_count)
-            instance_name = instance['instance'].split('/')[-1]
-            print 'target', instance_name
-            op = delete_instance(compute, instance_name, app.spec)
-            wait_for_operation(compute, spec.project, spec.zone, op["name"])
-
+        lb_resorces.delete()
+        app_resorces.delete()

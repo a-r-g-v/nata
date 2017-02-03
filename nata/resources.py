@@ -113,19 +113,35 @@ class AppResource(object):
         self.name = app.name
         self.spec = self.app.spec
 
-    def rolling(self):
-        def wait_for_satisfaction_health(health):
-            pass
+    def count_stable_instances(self, lb):
+        health_status = get_health_in_backend_service(compute, self.name, lb.name, self.spec)
+        if 'healthStatus' not in health_status:
+            raise Exception
+        cnt = 0
+        for health in health_status['healthStatus']:
+            if health['healthState'] == 'HEALTHY':
+                cnt += 1
+        return cnt
 
-        current_instances = list_managed_instance(compute, self.name, self.spec)
+    def wait_for_stable(self, lb, desire_stable_count):
+        while self.count_stable_instances(lb) != desire_stable_count:
+            print 'wait some maneged instances until stable... desire: %d' % desire_stable_count
+            import time
+            time.sleep(5)
 
-        current_health = None
+    def rolling(self, lb):
 
-        for instance in current_instances:
-            op = delete_instance(compute, instance, self.spec)
+        result = get_health_in_backend_service(compute, self.name, lb.name, self.spec)
+        desire_stable_count = self.count_stable_instances(lb)
+
+        if 'healthStatus' not in result:
+            raise Exception
+
+        for instance in result['healthStatus']:
+            self.wait_for_stable(lb, desire_stable_count)
+            instance_name = instance['instance'].split('/')[-1]
+            op = delete_instance(compute, instance_name, self.spec)
             wait_for_operation(compute, self.spec.project, self.spec.zone, op["name"])
-
-            wait_for_satisfaction_health(current_health)
 
 
     def remote_exist_resources(self):
