@@ -56,31 +56,47 @@ def get_global_address(compute, name, data):
 
 
 
-def update_global_forwarding_rule(compute, name, data):
+def update_global_forwarding_rule(compute, name, data, port=80):
     body = {
             'target': 'https://www.googleapis.com/compute/v1/projects/{project}/global/targetHttpProxies/{name}'.format(project=data.project, name=data.name),
             }
-    return compute.globalForwardingRules().setTarget(project=data.project, forwardingRule=name, body=body).execute()
+    return compute.globalForwardingRules().setTarget(project=data.project, forwardingRule=name + str(port), body=body).execute()
 
 def list_global_forwarding_rule(compute, data):
     return compute.globalForwardingRules().list(project=data.project).execute()
 
-def delete_global_forwarding_rule(compute, name, data):
-    return compute.globalForwardingRules().delete(project=data.project, forwardingRule=name).execute()
+def delete_global_forwarding_rule(compute, name, data, port=80):
+    return compute.globalForwardingRules().delete(project=data.project, forwardingRule=name + str(port)).execute()
 
-def exist_global_forwarding_rule(compute, name, data):
-    return exist_equals_name_in_item(compute, name, data, list_global_forwarding_rule)
+def exist_global_forwarding_rule(compute, name, data, port=80):
+    return exist_equals_name_in_item(compute, name + str(port), data, list_global_forwarding_rule)
 
-def create_global_forwarding_rule(compute, name, data, ipaddr):
+def create_global_forwarding_rule(compute, name, data, ipaddr, port=80):
+    resource = 'targetHttpProxies' if port == 80 else 'targetHttpsProxies'
     body = {
-            'name' :name, 
-            'portRange' : 80,
-            'target': 'https://www.googleapis.com/compute/v1/projects/{project}/global/targetHttpProxies/{name}'.format(project=data.project, name=data.name),
+            'name' :name + str(port), 
+            'portRange' : port,
+            'target': 'https://www.googleapis.com/compute/v1/projects/{project}/global/{resource}/{name}'.format(project=data.project, name=data.name, resource=resource),
             'IPAddress': ipaddr
             }
     return compute.globalForwardingRules().insert(project=data.project, body=body).execute()
 
+def list_target_https_proxy(compute, data):
+    return compute.targetHttpsProxies().list(project=data.project).execute()
 
+def delete_target_https_proxy(compute, name, data):
+    return compute.targetHttpsProxies().delete(project=data.project, targetHttpsProxy=name).execute()
+
+def exist_target_https_proxy(compute, name, data):
+    return exist_equals_name_in_item(compute, name, data, list_target_https_proxy)
+
+def create_target_https_proxy(compute, name, data):
+    body = {
+            'name': name,
+            'urlMap':  'global/urlMaps/{name}'.format(name=data.name),
+            'sslCertificates': data.sslCertificates
+            }
+    return compute.targetHttpsProxies().insert(project=data.project, body=body).execute()
 
 def list_target_http_proxy(compute, data):
     return compute.targetHttpProxies().list(project=data.project).execute()
@@ -128,9 +144,9 @@ def delete_http_health_check(compute, name, data):
 def create_http_health_check(compute, name, data):
     body = {
             'name': name,
-            'requestPath': '/',
-            'checkIntervalSec': 5,
-            'timeoutSec': 1 
+            'requestPath': data.requestPath,
+            'checkIntervalSec': int(data.checkIntervalSec),
+            'timeoutSec': int(data.timeoutSec)
             }
     return compute.httpHealthChecks().insert(project=data.project, body=body).execute()
 
