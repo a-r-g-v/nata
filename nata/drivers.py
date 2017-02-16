@@ -127,7 +127,8 @@ def delete_url_map(compute, name, data):
 def create_url_map(compute, name, data):
     body = {
             'name': name,
-            'defaultService': 'global/backendServices/{name}'.format(name=data.name)
+            'defaultService': 'global/backendServices/{name}'.format(name=data.name),
+            'pathRules': []
             }
     return compute.urlMaps().insert(project=data.project, body=body).execute()
 
@@ -144,10 +145,11 @@ def delete_http_health_check(compute, name, data):
 def create_http_health_check(compute, name, data):
     body = {
             'name': name,
-            'requestPath': data.requestPath,
             'checkIntervalSec': int(data.checkIntervalSec),
-            'timeoutSec': int(data.timeoutSec)
+            'timeoutSec': int(data.timeoutSec),
+            'requestPath': body.requestPath
             }
+
     return compute.httpHealthChecks().insert(project=data.project, body=body).execute()
 
 def delete_backend_service(compute, name, data):
@@ -201,21 +203,9 @@ def create_backend_service(compute, name, instance_groups_name, data):
 def create_instance_template(compute, name, data):
     body = {
             "name" : name,
-            "properties": {
-                "machineType": data.machineType,
-                "disks": [
-                    {
-                        "boot": True,
-                        "initializeParams": {
-                            "sourceImage": data.image,
-                            "diskSizeGb": data.diskSizeGb
-                            },
-                        "autoDelete": data.autoDelete,
-                        } 
-                    ],
-                "networkInterfaces": data.networkInterfaces
-                }
+            "properties": data.properties
             }
+
     return compute.instanceTemplates().insert(project=data.project, body=body).execute()
 
 def delete_instance_template(compute, name, data):
