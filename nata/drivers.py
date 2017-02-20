@@ -145,11 +145,8 @@ def delete_http_health_check(compute, name, data):
 def create_http_health_check(compute, name, data):
     body = {
             'name': name,
-            'checkIntervalSec': int(data.checkIntervalSec),
-            'timeoutSec': int(data.timeoutSec),
-            'requestPath': body.requestPath
             }
-
+    body.update(data.httpHealthCheck)
     return compute.httpHealthChecks().insert(project=data.project, body=body).execute()
 
 def delete_backend_service(compute, name, data):
@@ -197,7 +194,7 @@ def create_backend_service(compute, name, instance_groups_name, data):
 
     body = {
             'name': name,
-            'timeoutSec': 10,
+            'timeoutSec': 100,
             'enableCDN': data.enableCDN,
             'backends': [
                 {'group': instance_groups}
