@@ -194,7 +194,7 @@ def create_backend_service(compute, name, instance_groups_name, data):
 
     body = {
             'name': name,
-            'timeoutSec': 100,
+            'timeoutSec': data.LBtimeoutSec,
             'enableCDN': data.enableCDN,
             'backends': [
                 {'group': instance_groups}
