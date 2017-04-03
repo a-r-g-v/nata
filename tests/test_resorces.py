@@ -15,13 +15,13 @@ class ResorcesTest(unittest.TestCase):
         Session().configure(bind=engine)
         Base.metadata.create_all(engine)
 
-    def spec(self, name="push7-test"):
+    def spec(self, name="nata-test"):
         return Spec(yaml="""
 ---
 name: {name}
-project: push7-jp
+project: nata-jp
 zone: asia-northeast1-a
-image: global/images/family/infra-sampleapp-master
+image: global/images/family/nata-sampleapp-master
 diskSizeGb: 10
 machineType: n1-standard-1
 networkInterfaces:
@@ -40,11 +40,11 @@ autoDelete: True
         """.format(name=name))
 
     def test_app_and_lb_resorces(self):
-        spec = self.spec("push7-test-mapper")
-        service = Service(name="push7-test-mapper", spec=spec)
+        spec = self.spec("nata-test-mapper")
+        service = Service(name="nata-test-mapper", spec=spec)
 
-        app = App(name="push7-test-mapper", spec=spec, service=service)
-        lb = Lb(name="push7-test-mapper", spec=spec, app=app, service=service)
+        app = App(name="nata-test-mapper", spec=spec, service=service)
+        lb = Lb(name="nata-test-mapper", spec=spec, app=app, service=service)
 
         lb_resorces = LbResource(app, lb)
         app_resorces = AppResource(app)

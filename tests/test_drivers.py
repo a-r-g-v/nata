@@ -16,13 +16,13 @@ class DriversTest(unittest.TestCase):
         Session().configure(bind=engine)
         Base.metadata.create_all(engine)
 
-    def spec(self, name="push7-test"):
+    def spec(self, name="nata-test"):
         return Spec(yaml="""
 ---
 name: {name}
-project: push7-jp
+project: nata-jp
 zone: asia-northeast1-a
-image: global/images/family/infra-sampleapp-master
+image: global/images/family/nata-sampleapp-master
 diskSizeGb: 10
 machineType: n1-standard-1
 networkInterfaces:
@@ -41,11 +41,11 @@ autoDelete: True
         """.format(name=name))
 
     def test_drivers(self):
-        spec = self.spec("push7-test-driver")
-        service = Service(name="push7-test-driver", spec=spec)
+        spec = self.spec("nata-test-driver")
+        service = Service(name="nata-test-driver", spec=spec)
 
-        app = App(name="push7-test-driver", spec=spec, service=service)
-        lb = Lb(name="push7-test-driver", spec=spec, app=app, service=service)
+        app = App(name="nata-test-driver", spec=spec, service=service)
+        lb = Lb(name="nata-test-driver", spec=spec, app=app, service=service)
 
         app_resorces = AppResource(app)
         lb_resorces = LbResource(app, lb)
