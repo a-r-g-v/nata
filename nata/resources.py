@@ -3,11 +3,12 @@ import json
 
 class LbResource(object):
 
-    def __init__(self, lb, app):
+    def __init__(self, lb, app, enable_https=False):
         self.lb = lb
         self.name = lb.name
         self.spec = self.lb.spec
         self.app = app
+        self.enable_https = enable_https
 
     def remote_exist_resources(self):
         result = []
@@ -39,7 +40,7 @@ class LbResource(object):
         return result
 
     def exist(self):
-        return len(self.remote_exist_resources()) >= 8
+        return len(self.remote_exist_resources()) >= 6
 
     def create(self):
         op = create_http_health_check(compute, self.name, self.spec)
@@ -54,8 +55,9 @@ class LbResource(object):
         op = create_target_http_proxy(compute, self.name, self.spec)
         wait_for_operation(compute, self.spec.project, None, op["name"])
 
-        op = create_target_https_proxy(compute, self.name, self.spec)
-        wait_for_operation(compute, self.spec.project, None, op["name"])
+        if self.enable_https:
+            op = create_target_https_proxy(compute, self.name, self.spec)
+            wait_for_operation(compute, self.spec.project, None, op["name"])
 
         op = create_global_address(compute, self.name, self.spec)
         wait_for_operation(compute, self.spec.project, None, op["name"])
@@ -66,15 +68,16 @@ class LbResource(object):
         op = create_global_forwarding_rule(compute, self.name, self.spec, ipaddr, port=80)
         wait_for_operation(compute, self.spec.project, None, op["name"])
 
-        op = create_global_forwarding_rule(compute, self.name, self.spec, ipaddr, port=443)
-        wait_for_operation(compute, self.spec.project, None, op["name"])
+        if self.enable_https:
+            op = create_global_forwarding_rule(compute, self.name, self.spec, ipaddr, port=443)
+            wait_for_operation(compute, self.spec.project, None, op["name"])
 
     def delete(self):
         if exist_global_forwarding_rule(compute, self.name, self.spec, port=80):
             op = delete_global_forwarding_rule(compute, self.name, self.spec, port=80)
             wait_for_operation(compute, self.spec.project, None, op["name"])
 
-        if exist_global_forwarding_rule(compute, self.name, self.spec, port=443):
+        if self.enable_https and exist_global_forwarding_rule(compute, self.name, self.spec, port=443):
             op = delete_global_forwarding_rule(compute, self.name, self.spec, port=443)
             wait_for_operation(compute, self.spec.project, None, op["name"])
 
@@ -86,7 +89,7 @@ class LbResource(object):
             op = delete_target_http_proxy(compute, self.name, self.spec)
             wait_for_operation(compute, self.spec.project, None, op["name"])
 
-        if exist_target_https_proxy(compute, self.name, self.spec):
+        if self.enable_https and exist_target_https_proxy(compute, self.name, self.spec):
             op = delete_target_https_proxy(compute, self.name, self.spec)
             wait_for_operation(compute, self.spec.project, None, op["name"])
 

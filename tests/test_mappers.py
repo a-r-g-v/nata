@@ -22,14 +22,23 @@ class MappersTest(unittest.TestCase):
 name: {name}
 project: nata-jp
 zone: asia-northeast1-a
-image: global/images/family/nata-sampleapp-master
-diskSizeGb: 10
-machineType: n1-standard-1
-networkInterfaces:
-  - network: global/networks/default
-    accessConfigs:
-      - name: external-IP
-        type: ONE_TO_ONE_NAT
+properties:
+  - machineType: g1-small
+    canIpForward: True
+    disks: 
+      - boot: True
+        autoDelete: True
+        deviceName: {name}
+        initializeParams:
+          - sourceImage: global/images/family/nata-sampleapp
+            diskSizeGb: 10
+    networkInterfaces:
+      - network: global/networks/default
+        accessConfigs:
+          - name: external-IP
+            type: ONE_TO_ONE_NAT
+    scheduling:
+      preemptible: True
 autoscalingPolicy:
   maxNumReplicas: 10
   minNumRreplicas: 1
@@ -37,7 +46,11 @@ autoscalingPolicy:
   cpuUtilization:
     utilizationTarget: 0.9
 enableCDN: False
-autoDelete: True
+httpHealthCheck:
+  requestPath: /api/v1/
+  checkIntervalSec: 3
+  timeoutSec: 3
+LBtimeoutSec: 100
         """.format(name=name))
 
     def test_service_crud(self):

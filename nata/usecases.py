@@ -154,7 +154,7 @@ class DebugUseCase(object):
 
     @classmethod
     def do(cls):
-        data = {'project': 'push7-jp', 'zone': 'asia-northeast1-a'}
+        data = {'project': 'nata-jp', 'zone': 'asia-northeast1-a'}
         data = Spec(spec=data)
         # for LB
         result = list_global_address(compute, data)
@@ -171,7 +171,7 @@ class DebugUseCase(object):
                 cls.delete_service_and_app(item['name'])
     @classmethod
     def delete_service_and_app(cls, name):
-        data = {'project': 'push7-jp', 'name': name, 'zone': 'asia-northeast1-a'}
+        data = {'project': 'nata-jp', 'name': name, 'zone': 'asia-northeast1-a'}
         data = Spec(spec=data)
         if exist_global_forwarding_rule(compute, name, data):
             op = delete_global_forwarding_rule(compute, name, data)

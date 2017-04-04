@@ -28,6 +28,7 @@ class LbRecord(Base):
     address = Column(String(64), nullable=True)
     created_date = Column(DateTime, default=datetime.datetime.now(), nullable=False)
     archived_date =Column(DateTime, nullable=True)
+    enable_https = Column(Boolean, nullable=False, default=False)
 
     appno = Column(Integer, ForeignKey('app.no'), unique=True, nullable=False)
     serviceno = Column(Integer, ForeignKey('service.no'), unique=True, nullable=False)
