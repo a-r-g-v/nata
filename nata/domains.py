@@ -1,11 +1,10 @@
-
 class HumanDate():
-
+    @classmethod
     def time_ago_in_words(cls, time):
         from datetime import datetime
         now = datetime.now()
         diff = now - time
-        
+
         second_diff = diff.seconds
         day_diff = diff.days
         if day_diff < 0:
@@ -17,30 +16,30 @@ class HumanDate():
             if second_diff < 60:
                 return str(second_diff) + " seconds ago"
             if second_diff < 120:
-                return  "a minute ago"
+                return "a minute ago"
             if second_diff < 3600:
-                return str( second_diff / 60 ) + " minutes ago"
+                return str(second_diff / 60) + " minutes ago"
             if second_diff < 7200:
                 return "an hour ago"
             if second_diff < 86400:
-                return str( second_diff / 3600 ) + " hours ago"
+                return str(second_diff / 3600) + " hours ago"
         if day_diff == 1:
             return "Yesterday"
         if day_diff < 7:
             return str(day_diff) + " days ago"
         if day_diff < 31:
-            return str(day_diff/7) + " weeks ago"
+            return str(day_diff / 7) + " weeks ago"
         if day_diff < 365:
-            return str(day_diff/30) + " months ago"
-        return str(day_diff/365) + " years ago"
+            return str(day_diff / 30) + " months ago"
+        return str(day_diff / 365) + " years ago"
 
     @property
     def created_date(self):
         from human_dates import time_ago_in_words
         return self.time_ago_in_words(self._created_date)
 
-class Service(object, HumanDate):
 
+class Service(object, HumanDate):
     def __init__(self, name, spec):
         self.name = name
         self.spec = spec
@@ -70,11 +69,10 @@ class Service(object, HumanDate):
 
 
 class App(object, HumanDate):
-
     def __init__(self, name, spec, service):
         self.name = name
         self.spec = spec
-        self.primary = False # read only attr
+        self.primary = False  # read only attr
         self.service = service
 
     @staticmethod
@@ -89,6 +87,7 @@ class App(object, HumanDate):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
 
 class Lb(object):
     def __init__(self, name, spec, app, service):
@@ -106,8 +105,8 @@ class Lb(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-class Spec(object):
 
+class Spec(object):
     def __init__(self, spec=None, filename=None, yaml=None):
         if filename is not None:
             import yaml as yam
@@ -144,4 +143,3 @@ class Spec(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
-

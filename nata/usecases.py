@@ -3,7 +3,7 @@ from .mappers import AppMapper, ServiceMapper, LbMapper
 from .domains import Spec, Service, App, Lb
 from .resources import LbResource, AppResource
 from .drivers import *
-import sys 
+import sys
 import csv
 
 
@@ -22,12 +22,14 @@ def app_factory(new_app_name, spec, service):
 
     return new_app
 
+
 def lb_factory(new_lb_name, spec, target_app, service):
     new_lb = Lb(new_lb_name, spec, target_app, service)
 
     target_app_resource = AppResource(target_app)
     if not target_app_resource.exist():
-        raise Exception('target_app is not exists : %s', target_app_resource.name)
+        raise Exception('target_app is not exists : %s',
+                        target_app_resource.name)
 
     new_lb_resource = LbResource(new_lb, target_app)
     if new_lb_resource.exist():
@@ -41,8 +43,8 @@ def lb_factory(new_lb_name, spec, target_app, service):
 
     return new_lb
 
-class ServiceUseCase(object):
 
+class ServiceUseCase(object):
     @classmethod
     def create(cls, spec):
         new_service = Service(spec.name, spec)
@@ -56,7 +58,6 @@ class ServiceUseCase(object):
         new_service.set_app(new_app)
         new_service.set_lb(new_lb)
         ServiceMapper.update(new_service)
-
 
     @classmethod
     def delete(cls, service_name):
@@ -77,7 +78,10 @@ class ServiceUseCase(object):
 
         for service in services:
             address = "" if service.lb.address is None else service.lb.address
-            table.add_row([service.name, service.get_primary_app().name, address, service.created_date])
+            table.add_row([
+                service.name, service.get_primary_app().name, address,
+                service.created_date
+            ])
 
         print(table)
         return services
@@ -91,7 +95,9 @@ class ServiceUseCase(object):
             raise Exception('The application is primary.')
 
         if target_app.service != service:
-            raise Exception('The service that %s application belong is diffrent from %s.' % app.name, self.name)
+            raise Exception(
+                'The service that %s application belong is diffrent from %s.' %
+                target_app.name, app_name)
 
         lb = LbResource(service.lb, service.get_primary_app())
         assert lb.exist()
@@ -117,7 +123,6 @@ class AppUseCase(object):
         service = ServiceMapper.get(spec.name)
         if service is None:
             raise Exception('%s service is not exists.' % spec.name)
-
 
         new_app_name = App.generate_name(spec.name)
         new_app = app_factory(new_app_name, spec, service)
@@ -145,13 +150,15 @@ class AppUseCase(object):
 
         for app in apps:
             is_primary = 'Yes' if app.primary else 'No'
-            table.add_row([app.name, app.service.name, is_primary, None, app.created_date])
+            table.add_row([
+                app.name, app.service.name, is_primary, None, app.created_date
+            ])
 
         print(table)
         return apps
 
-class DebugUseCase(object):
 
+class DebugUseCase(object):
     @classmethod
     def do(cls):
         data = {'project': 'nata-jp', 'zone': 'asia-northeast1-a'}
@@ -169,9 +176,14 @@ class DebugUseCase(object):
         if 'items' in result:
             for item in result['items']:
                 cls.delete_service_and_app(item['name'])
+
     @classmethod
     def delete_service_and_app(cls, name):
-        data = {'project': 'nata-jp', 'name': name, 'zone': 'asia-northeast1-a'}
+        data = {
+            'project': 'nata-jp',
+            'name': name,
+            'zone': 'asia-northeast1-a'
+        }
         data = Spec(spec=data)
         if exist_global_forwarding_rule(compute, name, data):
             op = delete_global_forwarding_rule(compute, name, data)
@@ -208,5 +220,3 @@ class DebugUseCase(object):
         if exist_instance_template(compute, name, data):
             op = delete_instance_template(compute, data.name, data)
             wait_for_operation(compute, data.project, None, op["name"])
-
-

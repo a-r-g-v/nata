@@ -1,8 +1,8 @@
 from .drivers import *
 import json
 
-class LbResource(object):
 
+class LbResource(object):
     def __init__(self, lb, app, enable_https=False):
         self.lb = lb
         self.name = lb.name
@@ -13,10 +13,12 @@ class LbResource(object):
     def remote_exist_resources(self):
         result = []
 
-        if exist_global_forwarding_rule(compute, self.name, self.spec, port=80):
+        if exist_global_forwarding_rule(
+                compute, self.name, self.spec, port=80):
             result.append('global_forwarding_rule_http')
 
-        if exist_global_forwarding_rule(compute, self.name, self.spec, port=443):
+        if exist_global_forwarding_rule(
+                compute, self.name, self.spec, port=443):
             result.append('global_forwarding_rule_https')
 
         if exist_global_address(compute, self.name, self.spec):
@@ -46,7 +48,8 @@ class LbResource(object):
         op = create_http_health_check(compute, self.name, self.spec)
         wait_for_operation(compute, self.spec.project, None, op["name"])
 
-        op = create_backend_service(compute, self.name, self.app.name, self.spec)
+        op = create_backend_service(compute, self.name, self.app.name,
+                                    self.spec)
         wait_for_operation(compute, self.spec.project, None, op["name"])
 
         op = create_url_map(compute, self.name, self.spec)
@@ -65,20 +68,26 @@ class LbResource(object):
         ipaddr = get_global_address(compute, self.name, self.spec)
         self.lb.address = ipaddr
 
-        op = create_global_forwarding_rule(compute, self.name, self.spec, ipaddr, port=80)
+        op = create_global_forwarding_rule(
+            compute, self.name, self.spec, ipaddr, port=80)
         wait_for_operation(compute, self.spec.project, None, op["name"])
 
         if self.enable_https:
-            op = create_global_forwarding_rule(compute, self.name, self.spec, ipaddr, port=443)
+            op = create_global_forwarding_rule(
+                compute, self.name, self.spec, ipaddr, port=443)
             wait_for_operation(compute, self.spec.project, None, op["name"])
 
     def delete(self):
-        if exist_global_forwarding_rule(compute, self.name, self.spec, port=80):
-            op = delete_global_forwarding_rule(compute, self.name, self.spec, port=80)
+        if exist_global_forwarding_rule(
+                compute, self.name, self.spec, port=80):
+            op = delete_global_forwarding_rule(
+                compute, self.name, self.spec, port=80)
             wait_for_operation(compute, self.spec.project, None, op["name"])
 
-        if self.enable_https and exist_global_forwarding_rule(compute, self.name, self.spec, port=443):
-            op = delete_global_forwarding_rule(compute, self.name, self.spec, port=443)
+        if self.enable_https and exist_global_forwarding_rule(
+                compute, self.name, self.spec, port=443):
+            op = delete_global_forwarding_rule(
+                compute, self.name, self.spec, port=443)
             wait_for_operation(compute, self.spec.project, None, op["name"])
 
         if exist_global_address(compute, self.name, self.spec):
@@ -89,7 +98,8 @@ class LbResource(object):
             op = delete_target_http_proxy(compute, self.name, self.spec)
             wait_for_operation(compute, self.spec.project, None, op["name"])
 
-        if self.enable_https and exist_target_https_proxy(compute, self.name, self.spec):
+        if self.enable_https and exist_target_https_proxy(
+                compute, self.name, self.spec):
             op = delete_target_https_proxy(compute, self.name, self.spec)
             wait_for_operation(compute, self.spec.project, None, op["name"])
 
@@ -117,7 +127,8 @@ class AppResource(object):
         self.spec = self.app.spec
 
     def count_stable_instances(self, lb):
-        health_status = get_health_in_backend_service(compute, self.name, lb.name, self.spec)
+        health_status = get_health_in_backend_service(compute, self.name,
+                                                      lb.name, self.spec)
         if 'healthStatus' not in health_status:
             raise Exception
         cnt = 0
@@ -134,7 +145,8 @@ class AppResource(object):
 
     def rolling(self, lb):
 
-        result = get_health_in_backend_service(compute, self.name, lb.name, self.spec)
+        result = get_health_in_backend_service(compute, self.name, lb.name,
+                                               self.spec)
         desire_stable_count = self.count_stable_instances(lb)
 
         if 'healthStatus' not in result:
@@ -144,8 +156,8 @@ class AppResource(object):
             self.wait_for_stable(lb, desire_stable_count)
             instance_name = instance['instance'].split('/')[-1]
             op = delete_instance(compute, instance_name, self.spec)
-            wait_for_operation(compute, self.spec.project, self.spec.zone, op["name"])
-
+            wait_for_operation(compute, self.spec.project, self.spec.zone,
+                               op["name"])
 
     def remote_exist_resources(self):
         result = []
@@ -166,19 +178,22 @@ class AppResource(object):
 
     def create(self):
         exists_resources = self.remote_exist_resources()
-        if len(exists_resources) != 0 :
-            raise Exception('Already resources exists : {resources}'.format(resources=", ".join(exists_resources)))
+        if len(exists_resources) != 0:
+            raise Exception('Already resources exists : {resources}'.format(
+                resources=", ".join(exists_resources)))
 
         op = create_instance_template(compute, self.name, self.spec)
         wait_for_operation(compute, self.spec.project, None, op["name"])
         print('created instance_template: %s' % self.name)
 
         op = create_instance_group_manager(compute, self.name, self.spec)
-        wait_for_operation(compute, self.spec.project, self.spec.zone, op["name"])
+        wait_for_operation(compute, self.spec.project, self.spec.zone,
+                           op["name"])
         print('created instance_group_maneger: %s' % self.name)
 
         op = create_autoscaler(compute, self.name, self.spec)
-        wait_for_operation(compute, self.spec.project, self.spec.zone, op["name"])
+        wait_for_operation(compute, self.spec.project, self.spec.zone,
+                           op["name"])
         print('created autoscaler: %s' % self.name)
 
     def delete(self):
@@ -187,16 +202,17 @@ class AppResource(object):
 
         if exist_autoscaler(compute, self.name, self.spec):
             op = delete_autoscaler(compute, self.name, self.spec)
-            wait_for_operation(compute, self.spec.project, self.spec.zone, op["name"])
+            wait_for_operation(compute, self.spec.project, self.spec.zone,
+                               op["name"])
             print('deleted autoscaler: %s' % self.name)
 
         if exist_instance_group_manager(compute, self.name, self.spec):
             op = delete_instance_group_manager(compute, self.name, self.spec)
-            wait_for_operation(compute, self.spec.project, self.spec.zone, op["name"])
+            wait_for_operation(compute, self.spec.project, self.spec.zone,
+                               op["name"])
             print('deleted instance_group_maneger: %s', self.name)
 
         if exist_instance_template(compute, self.name, self.spec):
             op = delete_instance_template(compute, self.name, self.spec)
             wait_for_operation(compute, self.spec.project, None, op["name"])
             print('deleted instance_template: %s', self.name)
-
