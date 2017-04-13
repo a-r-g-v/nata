@@ -68,7 +68,7 @@ LBtimeoutSec: 100
 
         import time
 
-        time.sleep(30)
+        time.sleep(120)
         app_resorces.rolling(lb)
 
         lb_resorces.delete()

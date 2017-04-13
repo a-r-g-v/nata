@@ -126,11 +126,16 @@ class AppResource(object):
         self.name = app.name
         self.spec = self.app.spec
 
-    def count_stable_instances(self, lb):
-        health_status = get_health_in_backend_service(compute, self.name,
+    def get_health_in_backend_service(self, lb):
+        for _ in range(5):
+            health_status = get_health_in_backend_service(compute, self.name,
                                                       lb.name, self.spec)
-        if 'healthStatus' not in health_status:
-            raise Exception
+            if 'healthStatus' in health_status:
+                return health_status
+            time.sleep(60)
+
+    def count_stable_instances(self, lb):
+        health_status = self.get_health_in_backend_service(lb)
         cnt = 0
         for health in health_status['healthStatus']:
             if health['healthState'] == 'HEALTHY':
@@ -145,8 +150,7 @@ class AppResource(object):
 
     def rolling(self, lb):
 
-        result = get_health_in_backend_service(compute, self.name, lb.name,
-                                               self.spec)
+        result = self.get_health_in_backend_service(lb)
         desire_stable_count = self.count_stable_instances(lb)
 
         if 'healthStatus' not in result:
