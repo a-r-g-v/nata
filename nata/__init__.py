@@ -32,7 +32,7 @@ Session = create_session(init_engine())
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)-4d: %(message)s')
 
 handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)
