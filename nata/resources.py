@@ -1,5 +1,7 @@
 from .drivers import *
+from . import logger
 import json
+import time
 
 
 class LbResource(object):
@@ -144,8 +146,7 @@ class AppResource(object):
 
     def wait_for_stable(self, lb, desire_stable_count):
         while self.count_stable_instances(lb) != desire_stable_count:
-            print 'wait some maneged instances until stable... desire: %d' % desire_stable_count
-            import time
+            logger.debug('wait some maneged instances until stable... desire: %d' % desire_stable_count)
             time.sleep(5)
 
     def rolling(self, lb):
@@ -188,17 +189,17 @@ class AppResource(object):
 
         op = create_instance_template(compute, self.name, self.spec)
         wait_for_operation(compute, self.spec.project, None, op["name"])
-        print('created instance_template: %s' % self.name)
+        logger.debug('created instance_template: %s' % self.name)
 
         op = create_instance_group_manager(compute, self.name, self.spec)
         wait_for_operation(compute, self.spec.project, self.spec.zone,
                            op["name"])
-        print('created instance_group_maneger: %s' % self.name)
+        logger.debug('created instance_group_maneger: %s' % self.name)
 
         op = create_autoscaler(compute, self.name, self.spec)
         wait_for_operation(compute, self.spec.project, self.spec.zone,
                            op["name"])
-        print('created autoscaler: %s' % self.name)
+        logger.debug('created autoscaler: %s' % self.name)
 
     def delete(self):
         if not self.exist():
@@ -208,15 +209,15 @@ class AppResource(object):
             op = delete_autoscaler(compute, self.name, self.spec)
             wait_for_operation(compute, self.spec.project, self.spec.zone,
                                op["name"])
-            print('deleted autoscaler: %s' % self.name)
+            logger.debug('deleted autoscaler: %s' % self.name)
 
         if exist_instance_group_manager(compute, self.name, self.spec):
             op = delete_instance_group_manager(compute, self.name, self.spec)
             wait_for_operation(compute, self.spec.project, self.spec.zone,
                                op["name"])
-            print('deleted instance_group_maneger: %s', self.name)
+            logger.debug('deleted instance_group_maneger: %s', self.name)
 
         if exist_instance_template(compute, self.name, self.spec):
             op = delete_instance_template(compute, self.name, self.spec)
             wait_for_operation(compute, self.spec.project, None, op["name"])
-            print('deleted instance_template: %s', self.name)
+            logger.debug('deleted instance_template: %s', self.name)

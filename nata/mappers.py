@@ -1,32 +1,13 @@
 # encoding: utf-8
 from .domains import Service, App, Lb, Spec
 from .records import Base, ServiceRecord, AppRecord, LbRecord
-from .config import config
-from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.orm.query import Query
-from sqlalchemy import create_engine
 from sqlalchemy.sql import column
 from datetime import datetime
-import threading
 import abc
 import json
 
 
-def create_session(engine):
-    local = threading.local()
-
-    def get_session():
-        if hasattr(local, 'session'):
-            return local.session
-        local.session = scoped_session(
-            sessionmaker(autocommit=False, autoflush=False, bind=engine))
-        return local.session
-
-    return get_session
-
-
-def init_engine(echo=False):
-    return create_engine(config['schema'], encoding='utf-8', echo=echo)
 
 
 class MapperBase(object):
