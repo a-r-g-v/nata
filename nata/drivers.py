@@ -1,13 +1,14 @@
 from googleapiclient import discovery
 from oauth2client.client import GoogleCredentials
 import time
+from . import logger
 
 __cred = GoogleCredentials.get_application_default()
 compute = discovery.build('compute', 'v1', credentials=__cred)
 
 
 def wait_for_operation(compute, project, zone, operation):
-    print('Waiting for operation to finish...')
+    logger.debug('Waiting for operation to finish...')
     while True:
         if zone is not None:
             result = compute.zoneOperations().get(
@@ -17,7 +18,7 @@ def wait_for_operation(compute, project, zone, operation):
                 project=project, operation=operation).execute()
 
         if result['status'] == 'DONE':
-            print("done.")
+            logger.debug("done.")
             if 'error' in result:
                 raise Exception(result['error'])
 

@@ -8,7 +8,7 @@ setup(
     packages=find_packages(),  
     entry_points={  
         'console_scripts':  
-            'nata = nata:main'  
+            'nata = nata.cli:main'  
     },  
     zip_safe=False,  
     test_suite = 'tests',

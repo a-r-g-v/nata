@@ -4,7 +4,7 @@ import yaml
 
 from . import engine
 from nata import Session
-from nata.mappers import AppMapper, ServiceMapper, create_session, LbMapper
+from nata.mappers import AppMapper, ServiceMapper, LbMapper
 from nata.domains import App, Service, Lb, Spec
 from nata.records import Base
 
