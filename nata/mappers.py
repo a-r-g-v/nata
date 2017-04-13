@@ -14,15 +14,20 @@ import json
 
 def create_session(engine):
     local = threading.local()
+
     def get_session():
         if hasattr(local, 'session'):
             return local.session
-        local.session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+        local.session = scoped_session(
+            sessionmaker(autocommit=False, autoflush=False, bind=engine))
         return local.session
+
     return get_session
+
 
 def init_engine(echo=False):
     return create_engine(config['schema'], encoding='utf-8', echo=echo)
+
 
 class MapperBase(object):
     __metaclass__ = abc.ABCMeta
@@ -34,7 +39,8 @@ class MapperBase(object):
 
     @classmethod
     def query(cls, record):
-        return cls.get_session().query(record).filter(record.archived_date == None)
+        return cls.get_session().query(record).filter(
+            record.archived_date == None)
 
     @classmethod
     def services(cls):
@@ -48,8 +54,8 @@ class MapperBase(object):
     def lbs(cls):
         return cls.query(LbRecord)
 
-class ServiceMapper(MapperBase):
 
+class ServiceMapper(MapperBase):
     @classmethod
     def convert_record_to_domain(cls, service_record):
         spec = Spec(spec=json.loads(service_record.spec))
@@ -57,13 +63,16 @@ class ServiceMapper(MapperBase):
         service._created_date = service_record.created_date
         if service_record.apps is not None or len(service_record.apps) > 0:
             for app_record in service_record.apps:
-                service.set_app(AppMapper.convert_record_to_domain(app_record, service=service))
+                service.set_app(
+                    AppMapper.convert_record_to_domain(
+                        app_record, service=service))
 
         if service_record.lb is not None:
-            service.set_lb(LbMapper.convert_record_to_domain(service_record.lb, service=service))
+            service.set_lb(
+                LbMapper.convert_record_to_domain(
+                    service_record.lb, service=service))
 
         return service
-
 
     @classmethod
     def get(cls, service_name):
@@ -85,7 +94,7 @@ class ServiceMapper(MapperBase):
         session = cls.get_session()
         now = datetime.now()
         if service_record.apps is not None and len(service_record.apps) > 0:
-            for app in service_record.apps :
+            for app in service_record.apps:
                 app.archived_date = now
                 session.add(app)
         if service_record.lb is not None:
@@ -97,7 +106,7 @@ class ServiceMapper(MapperBase):
 
     @classmethod
     def insert(cls, service):
-        spec = spec=service.spec.to_json()
+        spec = spec = service.spec.to_json()
 
         # check unique constraint
         if cls.services().filter_by(name=service.name).count() > 0:
@@ -129,7 +138,6 @@ class ServiceMapper(MapperBase):
                 value.service = service
                 LbMapper.update(value)
 
-
             elif key in service_record.__dict__:
                 service_record.__setattr__(key, value)
 
@@ -138,14 +146,13 @@ class ServiceMapper(MapperBase):
         session.commit()
 
 
-
 class AppMapper(MapperBase):
-
     @classmethod
     def convert_record_to_domain(cls, app_record, service=None):
         spec = Spec(spec=json.loads(app_record.spec))
         if service is None:
-            service = ServiceMapper.convert_record_to_domain(app_record.service)
+            service = ServiceMapper.convert_record_to_domain(
+                app_record.service)
         app = App(app_record.name, spec, service)
         app._created_date = app_record.created_date
         if app_record.lb is not None:
@@ -165,7 +172,6 @@ class AppMapper(MapperBase):
         for app_record in app_records:
             results.append(cls.convert_record_to_domain(app_record))
         return results
-
 
     @classmethod
     def delete(cls, app):
@@ -188,8 +194,13 @@ class AppMapper(MapperBase):
         if cls.apps().filter_by(name=app.name).count() > 0:
             raise Exception('A app with the same name already exists.')
 
-        service_record = cls.services().filter_by(name=app.service.name).first()
-        app_record = AppRecord(name=app.name, spec=spec, zone=app.spec.zone, serviceno=service_record.no)
+        service_record = cls.services().filter_by(
+            name=app.service.name).first()
+        app_record = AppRecord(
+            name=app.name,
+            spec=spec,
+            zone=app.spec.zone,
+            serviceno=service_record.no)
         session = cls.get_session()
         session.add(app_record)
         session.commit()
@@ -205,7 +216,8 @@ class AppMapper(MapperBase):
                 app_record.spec = value.to_json()
 
             elif key == "service":
-                serviceno = cls.services().filter_by(name=value.name).first().no
+                serviceno = cls.services().filter_by(
+                    name=value.name).first().no
                 app_record.serviceno = serviceno
 
             elif key in ['primary']:
@@ -217,7 +229,7 @@ class AppMapper(MapperBase):
         session = cls.get_session()
         session.add(app_record)
         session.commit()
-        
+
 
 class LbMapper(MapperBase):
     @classmethod
@@ -225,7 +237,8 @@ class LbMapper(MapperBase):
         spec = Spec(spec=json.loads(lb_record.service.spec))
         if service is None:
             service = ServiceMapper.convert_record_to_domain(lb_record.service)
-        app = AppMapper.convert_record_to_domain(lb_record.app, service=service)
+        app = AppMapper.convert_record_to_domain(
+            lb_record.app, service=service)
         lb = Lb(spec.name, spec, app, service)
         lb.address = lb_record.address
         return lb
@@ -244,7 +257,6 @@ class LbMapper(MapperBase):
         for lb_record in lb_records:
             results.append(cls.convert_record_to_domain(lb_record))
         return results
-
 
     @classmethod
     def delete(cls, lb):
@@ -265,7 +277,6 @@ class LbMapper(MapperBase):
         session.add(lb_record)
         session.commit()
 
-
     @classmethod
     def update(cls, lb):
         serviceno = cls.services().filter_by(name=lb.name).first().no
@@ -275,7 +286,8 @@ class LbMapper(MapperBase):
                 continue
 
             elif key == "service":
-                serviceno = cls.services().filter_by(name=value.name).first().no
+                serviceno = cls.services().filter_by(
+                    name=value.name).first().no
                 lb_record.serviceno = serviceno
 
             elif key == "app":
@@ -288,4 +300,3 @@ class LbMapper(MapperBase):
         session = cls.get_session()
         session.add(lb_record)
         session.commit()
-

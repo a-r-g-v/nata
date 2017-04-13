@@ -8,8 +8,9 @@ from nata.mappers import AppMapper, ServiceMapper, create_session, LbMapper
 from nata.domains import App, Service, Lb, Spec
 from nata.records import Base
 from nata.resources import LbResource, AppResource
+from nata.drivers import *
 
-class ResorcesTest(unittest.TestCase):
+class DriversTest(unittest.TestCase):
 
     def setUp(self):
         Session().configure(bind=engine)
@@ -52,25 +53,23 @@ httpHealthCheck:
 LBtimeoutSec: 100
         """.format(name=name))
 
-    def test_app_and_lb_resorces(self):
-        spec = self.spec("nata-test-mapper")
-        service = Service(name="nata-test-mapper", spec=spec)
+    def test_drivers(self):
+        spec = self.spec("nata-test-driver")
+        service = Service(name="nata-test-driver", spec=spec)
 
-        app = App(name="nata-test-mapper", spec=spec, service=service)
-        lb = Lb(name="nata-test-mapper", spec=spec, app=app, service=service)
+        app = App(name="nata-test-driver", spec=spec, service=service)
+        lb = Lb(name="nata-test-driver", spec=spec, app=app, service=service)
 
-        lb_resorces = LbResource(app, lb)
         app_resorces = AppResource(app)
+        lb_resorces = LbResource(app, lb)
 
-        assert app_resorces.exist() is False
         app_resorces.create()
-        assert app_resorces.exist() is True
-
-        assert lb_resorces.exist() is False
         lb_resorces.create()
-        assert lb_resorces.exist() is True
-        lb_resorces.delete()
-        assert lb_resorces.exist() is False
 
+        import time
+
+        time.sleep(120)
+        app_resorces.rolling(lb)
+
+        lb_resorces.delete()
         app_resorces.delete()
-        assert app_resorces.exist() is False

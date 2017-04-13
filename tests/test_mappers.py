@@ -16,20 +16,29 @@ class MappersTest(unittest.TestCase):
         Session().configure(bind=engine)
         Base.metadata.create_all(engine)
 
-    def spec(self, name="push7-test"):
+    def spec(self, name="nata-test"):
         return Spec(yaml="""
 ---
 name: {name}
-project: push7-jp
+project: nata-jp
 zone: asia-northeast1-a
-image: global/images/family/infra-sampleapp-master
-diskSizeGb: 10
-machineType: n1-standard-1
-networkInterfaces:
-  - network: global/networks/default
-    accessConfigs:
-      - name: external-IP
-        type: ONE_TO_ONE_NAT
+properties:
+  - machineType: g1-small
+    canIpForward: True
+    disks: 
+      - boot: True
+        autoDelete: True
+        deviceName: {name}
+        initializeParams:
+          - sourceImage: global/images/family/nata-sampleapp
+            diskSizeGb: 10
+    networkInterfaces:
+      - network: global/networks/default
+        accessConfigs:
+          - name: external-IP
+            type: ONE_TO_ONE_NAT
+    scheduling:
+      preemptible: True
 autoscalingPolicy:
   maxNumReplicas: 10
   minNumRreplicas: 1
@@ -37,12 +46,16 @@ autoscalingPolicy:
   cpuUtilization:
     utilizationTarget: 0.9
 enableCDN: False
-autoDelete: True
+httpHealthCheck:
+  requestPath: /api/v1/
+  checkIntervalSec: 3
+  timeoutSec: 3
+LBtimeoutSec: 100
         """.format(name=name))
 
     def test_service_crud(self):
         spec = self.spec()
-        service = Service(name="push7-test", spec=spec)
+        service = Service(name="nata-test", spec=spec)
 
         # Insert
         ServiceMapper.insert(service)
@@ -51,14 +64,14 @@ autoDelete: True
 
 
         # Get
-        get_service = ServiceMapper.get('push7-test')
+        get_service = ServiceMapper.get('nata-test')
         assert get_service.name == service.name
         assert type(get_service) is Service
 
         # Update
         service.spec.test_update = True
         ServiceMapper.update(service)
-        get_service = ServiceMapper.get('push7-test')
+        get_service = ServiceMapper.get('nata-test')
         assert get_service.spec.test_update is True
 
         # Delete
@@ -69,12 +82,12 @@ autoDelete: True
     def test_app_crud(self):
         spec = self.spec()
 
-        service = Service(name="push7-test2", spec=spec)
+        service = Service(name="nata-test2", spec=spec)
         ServiceMapper.insert(service)
         names = [s.name for s in ServiceMapper.list()]
         assert service.name in names
 
-        app = App(name="push7-test2", spec=spec, service=service)
+        app = App(name="nata-test2", spec=spec, service=service)
 
         # Insert
         AppMapper.insert(app)
@@ -85,14 +98,14 @@ autoDelete: True
         assert app in get_service.apps
 
         # Get
-        get_app = AppMapper.get('push7-test2')
+        get_app = AppMapper.get('nata-test2')
         assert get_app.name == app.name
         assert type(get_app) is App
 
         # Update
         app.spec.test_update = True
         AppMapper.update(app)
-        get_app = AppMapper.get('push7-test2')
+        get_app = AppMapper.get('nata-test2')
         assert get_app.spec.test_update is True
 
         # Delete
@@ -102,21 +115,21 @@ autoDelete: True
         ServiceMapper.delete(service)
 
     def test_lb_crud(self):
-        spec = self.spec("push7-test3")
+        spec = self.spec("nata-test3")
 
 
-        service = Service(name="push7-test3", spec=spec)
+        service = Service(name="nata-test3", spec=spec)
         ServiceMapper.insert(service)
         names = [s.name for s in ServiceMapper.list()]
         assert service.name in names
 
-        app = App(name="push7-test3", spec=spec, service=service)
+        app = App(name="nata-test3", spec=spec, service=service)
         AppMapper.insert(app)
         names = [s.name for s in AppMapper.list()]
         assert app.name in names
 
 
-        lb = Lb(name="push7-test3", spec=spec, app=app, service=service)
+        lb = Lb(name="nata-test3", spec=spec, app=app, service=service)
         # Insert
         LbMapper.insert(lb)
         names = [s.name for s in LbMapper.list()]
@@ -126,7 +139,7 @@ autoDelete: True
         assert lb == get_service.lb
 
         # Get
-        get_lb = LbMapper.get('push7-test3')
+        get_lb = LbMapper.get('nata-test3')
         assert get_lb.name == lb.name
         assert type(get_lb) is Lb
 
@@ -136,7 +149,7 @@ autoDelete: True
         LbMapper.update(get_lb)
 
         # Get
-        get_updated_lb = LbMapper.get('push7-test3')
+        get_updated_lb = LbMapper.get('nata-test3')
         assert get_updated_lb.name == lb.name
         assert type(get_updated_lb) is Lb
         assert get_updated_lb.address == "test"

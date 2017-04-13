@@ -8,8 +8,8 @@ from .config import config
 
 Session = create_session(init_engine())
 
-
 ## argv parser
+
 
 def debug_parser():
     DebugUseCase.do()
@@ -23,16 +23,17 @@ def app_parser():
         print_help()
 
     elif sys.argv[2] == 'create':
-         AppUseCase.create(Spec(filename=sys.argv[3]))
+        AppUseCase.create(Spec(filename=sys.argv[3]))
 
     elif sys.argv[2] == 'list':
-         AppUseCase.list()
+        AppUseCase.list()
 
     elif sys.argv[2] == 'delete':
-         AppUseCase.delete(sys.argv[3])
+        AppUseCase.delete(sys.argv[3])
 
     else:
         print_help()
+
 
 def service_parser():
     def print_help():
@@ -41,7 +42,7 @@ def service_parser():
     if len(sys.argv) < 3:
         print_help()
     elif sys.argv[2] == 'create':
-         ServiceUseCase.create(Spec(filename=sys.argv[3]))
+        ServiceUseCase.create(Spec(filename=sys.argv[3]))
 
     elif sys.argv[2] == 'list':
         ServiceUseCase.list()
@@ -50,10 +51,11 @@ def service_parser():
         ServiceUseCase.delete(sys.argv[3])
 
     elif sys.argv[2] == 'switch':
-         ServiceUseCase.switch(sys.argv[3], sys.argv[4])
+        ServiceUseCase.switch(sys.argv[3], sys.argv[4])
 
     else:
         print_help()
+
 
 def parser():
     def print_notfound(command):
@@ -86,10 +88,12 @@ Commands:
     else:
         print_notfound(sys.argv[1])
 
+
 def main():
     Base.metadata.create_all(init_engine())
 
     parser()
+
 
 if __name__ == '__main__':
     main()

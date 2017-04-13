@@ -16,20 +16,29 @@ class UsecaseTest(unittest.TestCase):
         Session().configure(bind=engine)
         Base.metadata.create_all(engine)
 
-    def spec(self, name="push7-test-usecase"):
+    def spec(self, name="nata-test-usecase"):
         return Spec(yaml="""
 ---
 name: {name}
-project: push7-jp
+project: nata-jp
 zone: asia-northeast1-a
-image: global/images/family/infra-sampleapp-master
-diskSizeGb: 10
-machineType: n1-standard-1
-networkInterfaces:
-  - network: global/networks/default
-    accessConfigs:
-      - name: external-IP
-        type: ONE_TO_ONE_NAT
+properties:
+  - machineType: g1-small
+    canIpForward: True
+    disks: 
+      - boot: True
+        autoDelete: True
+        deviceName: {name}
+        initializeParams:
+          - sourceImage: global/images/family/nata-sampleapp
+            diskSizeGb: 10
+    networkInterfaces:
+      - network: global/networks/default
+        accessConfigs:
+          - name: external-IP
+            type: ONE_TO_ONE_NAT
+    scheduling:
+      preemptible: True
 autoscalingPolicy:
   maxNumReplicas: 10
   minNumRreplicas: 1
@@ -37,23 +46,27 @@ autoscalingPolicy:
   cpuUtilization:
     utilizationTarget: 0.9
 enableCDN: False
-autoDelete: True
+httpHealthCheck:
+  requestPath: /api/v1/
+  checkIntervalSec: 3
+  timeoutSec: 3
+LBtimeoutSec: 100
         """.format(name=name))
 
 
     def test_app_lb_factory(self):
-        spec = self.spec('push7-test-app')
-        service = Service('push7-test-app', spec)
+        spec = self.spec('nata-test-app')
+        service = Service('nata-test-app', spec)
         ServiceMapper.insert(service)
 
-        new_app = app_factory('push7-test-app', spec, service)
-        assert new_app.name == 'push7-test-app'
+        new_app = app_factory('nata-test-app', spec, service)
+        assert new_app.name == 'nata-test-app'
 
         names = [ app.name for app in AppMapper.list()]
-        assert 'push7-test-app' in names
+        assert 'nata-test-app' in names
 
-        new_lb = lb_factory('push7-test-app', spec, new_app, service)
-        assert new_lb.name == 'push7-test-app'
+        new_lb = lb_factory('nata-test-app', spec, new_app, service)
+        assert new_lb.name == 'nata-test-app'
 
 
         lb_r = LbResource(new_lb, new_app)
@@ -65,13 +78,13 @@ autoDelete: True
         assert app_r.exist() is False
     
     def test_service(self):
-        spec = self.spec('push7-test-service-uc')
+        spec = self.spec('nata-test-service-uc')
 
         ServiceUseCase.create(spec)
         names = [ service.name for service in ServiceUseCase.list()]
-        assert 'push7-test-service-uc' in names
+        assert 'nata-test-service-uc' in names
 
-        def search_app(name='push7-test-service-uc'):
+        def search_app(name='nata-test-service-uc'):
             apps = []
             for app in AppUseCase.list():
                 if name in app.name:
@@ -91,7 +104,7 @@ autoDelete: True
             if not app.primary:
                 target = app
         
-        ServiceUseCase.switch('push7-test-service-uc', target.name)
+        ServiceUseCase.switch('nata-test-service-uc', target.name)
 
         target2 = None
         for app in search_app():
@@ -101,9 +114,9 @@ autoDelete: True
         assert target2 == target
 
 
-        ServiceUseCase.delete('push7-test-service-uc')
+        ServiceUseCase.delete('nata-test-service-uc')
         names = [ service.name for service in ServiceUseCase.list()]
-        assert 'push7-test-service-uc' not in names
+        assert 'nata-test-service-uc' not in names
 
 
         assert search_app() is None
@@ -111,15 +124,15 @@ autoDelete: True
 
 
     def test_app(self):
-        spec = self.spec('push7-test-app-uc')
+        spec = self.spec('nata-test-app-uc')
 
-        service = Service('push7-test-app-uc', spec)
+        service = Service('nata-test-app-uc', spec)
         ServiceMapper.insert(service)
 
         AppUseCase.create(spec)
         target = None
         for app in AppUseCase.list():
-            if 'push7-test-app-uc' in app.name:
+            if 'nata-test-app-uc' in app.name:
                 target = app
 
         assert target is not None
@@ -127,6 +140,6 @@ autoDelete: True
         AppUseCase.delete(app.name)
         names = [ app.name for app in AppUseCase.list()]
 
-        booleans = [ 'push7-test-app-uc' in app.name for app in AppUseCase.list()]
+        booleans = [ 'nata-test-app-uc' in app.name for app in AppUseCase.list()]
         assert True not in booleans
         ServiceMapper.delete(service)
