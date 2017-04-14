@@ -8,11 +8,14 @@ from .records import Base
 
 
 def debug_parser():
+    # type: () -> None
     DebugUseCase.do()
 
 
 def app_parser():
+    # type: () -> None
     def print_help():
+        # type: () -> None
         print('app help')
 
     if len(sys.argv) < 3:
@@ -32,7 +35,9 @@ def app_parser():
 
 
 def service_parser():
+    # type: () -> None
     def print_help():
+        # type: () -> None
         print('service help')
 
     if len(sys.argv) < 3:
@@ -57,12 +62,15 @@ def service_parser():
 
 
 def parser():
+    # type: () -> None
     def print_notfound(command):
+        # type: (str) -> None
         print("""{name}: '{command}' is not a {name} command.
 See '{name} --help'.
         """.format(name=sys.argv[0], command=command))
 
     def print_help():
+        # type: () -> None
         print("""Usage: {name} COMMAND [arg...]
 
 deployment toolkit for google compute engine
@@ -89,6 +97,7 @@ Commands:
 
 
 def main():
+    # type: () -> None
     Base.metadata.create_all(init_engine())
 
     parser()
