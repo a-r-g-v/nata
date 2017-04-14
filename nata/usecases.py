@@ -50,7 +50,7 @@ class ServiceUseCase(object):
     def rolling(cls, name):
         service = ServiceMapper.get(name)
         app_resource = AppResource(service.get_primary_app())
-        app_resource.rolling()
+        app_resource.rolling(service.lb)
 
     @classmethod
     def create(cls, spec):

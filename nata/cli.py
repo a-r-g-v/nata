@@ -46,7 +46,7 @@ def service_parser():
     elif sys.argv[2] == 'delete':
         ServiceUseCase.delete(sys.argv[3])
 
-    elif sys.argv[2] == 'rolling-update':
+    elif sys.argv[2] == 'rolling':
         ServiceUseCase.rolling(sys.argv[3])
 
     elif sys.argv[2] == 'switch':

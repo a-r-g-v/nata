@@ -1,4 +1,4 @@
-class HumanDate():
+class HumanDate(object):
     @classmethod
     def time_ago_in_words(cls, time):
         from datetime import datetime
@@ -39,7 +39,7 @@ class HumanDate():
         return self.time_ago_in_words(self._created_date)
 
 
-class Service(object, HumanDate):
+class Service(HumanDate):
     def __init__(self, name, spec):
         self.name = name
         self.spec = spec
@@ -68,7 +68,7 @@ class Service(object, HumanDate):
         return not self.__eq__(other)
 
 
-class App(object, HumanDate):
+class App(HumanDate):
     def __init__(self, name, spec, service):
         self.name = name
         self.spec = spec
