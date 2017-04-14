@@ -7,6 +7,7 @@ Nata は Google Compute Engine 用のシンプルなWebアプリケーション 
 
 # Features
 - 典型的な Google Compute Engine の構成を1コマンドで展開
+- オートスケール
 - インスタンスの 無停止 Rolling Update
 - Blue-Green Deployment
 - Custom Domainに対応
@@ -27,7 +28,7 @@ sudo python3 setup.py install
 Nataを使用するためには，Google Compute Engine上に以下の条件を満たすイメージを作成する必要があります．
 
 - インスタンスを起動するだけで，0.0.0.0:80 に HTTPサービスが提供される
-- 正常にのみ2xxが返却されるヘルスチェック用のHTTPエンドポイントを持つ (オートスケールの為に必要)
+- 正常状態にだけ2xxが返却されるヘルスチェック用のHTTPエンドポイントを持つ (オートスケールの為に必要)
 
 また，イメージファミリとして作成することをお勧めします．
 
@@ -73,10 +74,34 @@ httpHealthCheck:
 LBtimeoutSec: 100
 ```
 
-1. 上記 Specファイルから`Service`を作成します．`Service` とは それぞれ単一の `Lb` と `App` で構成されるコンポーネントです．
-  `nata service create <path-to-spec-file>`
+1. 上記 Specファイルから`Service`を作成します． `nata service create <path-to-spec-file>`
 
 1. 無事，`Service` の作成が完了したら，`nata service list` で 存在する`Service`の一覧を表示させることができます
 
-## 他
-TODO
+# Concepts
+
+
+## Service
+
+`Service` とは，1つのEndpointと1つ以上の`App`の集合を持つ要素です． 
+また，`Service`はただ1つの`Primary App`を持ちます．これは，現在Endpointと関連付いている(公開されている)`App`のことです.
+
+### Endpoint(Lb)
+`Endpoint` は 外部公開用 である IPv4アドレスを持ちます．
+
+`Endpoint` は Google Compute Engine 上のリソースである，以下を持ちます．
+- global_forwarding_rule_http
+- global_forwarding_rule_https
+- global_address
+- target_http_proxy
+- target_https_proxy
+- url_map
+- backend_service
+- http_health_check
+
+
+## App
+`App` は Google Compute Engine上のリソースである，以下を持ちます
+- instance_template
+- group_manager
+- autoscaler
