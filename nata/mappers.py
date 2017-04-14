@@ -4,6 +4,7 @@ from .records import Base, ServiceRecord, AppRecord, LbRecord
 from sqlalchemy.orm.query import Query
 from sqlalchemy.sql import column
 from datetime import datetime
+from typing import Any
 import abc
 import json
 
@@ -15,30 +16,36 @@ class MapperBase(object):
 
     @classmethod
     def get_session(cls):
+        # type: () -> Any
         from . import Session
         return Session()
 
     @classmethod
     def query(cls, record):
+        # type: (Any) -> Any
         return cls.get_session().query(record).filter(
             record.archived_date == None)
 
     @classmethod
     def services(cls):
+        # type: () -> Any
         return cls.query(ServiceRecord)
 
     @classmethod
     def apps(cls):
+        # type: () -> Any
         return cls.query(AppRecord)
 
     @classmethod
     def lbs(cls):
+        # type: () -> Any
         return cls.query(LbRecord)
 
 
 class ServiceMapper(MapperBase):
     @classmethod
     def convert_record_to_domain(cls, service_record):
+        # type: (ServiceRecord) -> Service
         spec = Spec(spec=json.loads(service_record.spec))
         service = Service(service_record.name, spec)
         service._created_date = service_record.created_date
@@ -57,12 +64,14 @@ class ServiceMapper(MapperBase):
 
     @classmethod
     def get(cls, service_name):
+        # type: (str) -> Service
         service_record = cls.services().filter_by(name=service_name).first()
         if service_record is not None:
             return cls.convert_record_to_domain(service_record)
 
     @classmethod
     def list(cls):
+        # type: () -> List[Service]
         results = []
         service_records = cls.services().all()
         for service_record in service_records:
@@ -71,6 +80,7 @@ class ServiceMapper(MapperBase):
 
     @classmethod
     def delete(cls, service):
+        # type: (Service) -> None
         service_record = cls.services().filter_by(name=service.name).first()
         session = cls.get_session()
         now = datetime.now()
@@ -87,6 +97,7 @@ class ServiceMapper(MapperBase):
 
     @classmethod
     def insert(cls, service):
+        # type: (Service) -> None
         spec = spec = service.spec.to_json()
 
         # check unique constraint
@@ -100,6 +111,7 @@ class ServiceMapper(MapperBase):
 
     @classmethod
     def update(cls, service):
+        # type: (Service) -> None
         service_record = cls.services().filter_by(name=service.name).first()
         for (key, value) in service.__dict__.items():
             if '__' in key or 'no' in key or 'name' in key:
@@ -130,6 +142,7 @@ class ServiceMapper(MapperBase):
 class AppMapper(MapperBase):
     @classmethod
     def convert_record_to_domain(cls, app_record, service=None):
+        # type: (AppRecord, Union[ServiceRecord, None]) -> App
         spec = Spec(spec=json.loads(app_record.spec))
         if service is None:
             service = ServiceMapper.convert_record_to_domain(
@@ -142,12 +155,14 @@ class AppMapper(MapperBase):
 
     @classmethod
     def get(cls, app_name):
+        # type: (str) -> App
         app_record = cls.apps().filter_by(name=app_name).first()
         if app_record is not None:
             return cls.convert_record_to_domain(app_record)
 
     @classmethod
     def list(cls):
+        # type: () -> List[App]
         results = []
         app_records = cls.apps().all()
         for app_record in app_records:
@@ -156,6 +171,9 @@ class AppMapper(MapperBase):
 
     @classmethod
     def delete(cls, app):
+        # type: (App) -> None
+
+        # FIXME: check
         """
         if app.primary:
             raise Exception('primary app cannot be deleted by mapper.')
@@ -169,6 +187,7 @@ class AppMapper(MapperBase):
 
     @classmethod
     def insert(cls, app):
+        # type: (App) -> None
         spec = app.spec.to_json()
 
         # check unique constraint
@@ -188,6 +207,7 @@ class AppMapper(MapperBase):
 
     @classmethod
     def update(cls, app):
+        # type: (App) -> None
         app_record = cls.apps().filter_by(name=app.name).first()
         for (key, value) in app.__dict__.items():
             if '__' in key or 'no' in key or 'name' in key:
@@ -215,6 +235,7 @@ class AppMapper(MapperBase):
 class LbMapper(MapperBase):
     @classmethod
     def convert_record_to_domain(cls, lb_record, service=None):
+        # type: (LbRecord, ServiceRecord) -> Lb
         spec = Spec(spec=json.loads(lb_record.service.spec))
         if service is None:
             service = ServiceMapper.convert_record_to_domain(lb_record.service)
@@ -226,6 +247,7 @@ class LbMapper(MapperBase):
 
     @classmethod
     def get(cls, lb_name):
+        # type: (str) -> Lb
         serviceno = cls.services().filter_by(name=lb_name).first().no
         lb_record = cls.lbs().filter_by(serviceno=serviceno).first()
         if lb_record is not None:
@@ -233,6 +255,7 @@ class LbMapper(MapperBase):
 
     @classmethod
     def list(cls):
+        # type: () -> List[Lb]
         results = []
         lb_records = cls.lbs().all()
         for lb_record in lb_records:
@@ -241,6 +264,7 @@ class LbMapper(MapperBase):
 
     @classmethod
     def delete(cls, lb):
+        # type: (Lb) -> None
         serviceno = cls.services().filter_by(name=lb.service.name).first().no
         lb_record = cls.lbs().filter_by(serviceno=serviceno).first()
         session = cls.get_session()
@@ -250,6 +274,7 @@ class LbMapper(MapperBase):
 
     @classmethod
     def insert(cls, lb):
+        # type: (Lb) -> None
         spec = lb.spec.to_json()
         serviceno = cls.services().filter_by(name=lb.service.name).first().no
         appno = cls.apps().filter_by(name=lb.app.name).first().no
@@ -260,6 +285,7 @@ class LbMapper(MapperBase):
 
     @classmethod
     def update(cls, lb):
+        # type: (Lb) -> None
         serviceno = cls.services().filter_by(name=lb.name).first().no
         lb_record = cls.lbs().filter_by(serviceno=serviceno).first()
         for (key, value) in lb.__dict__.items():
