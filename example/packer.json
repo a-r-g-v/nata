@@ -1,0 +1,39 @@
+{
+  "variables" : {
+    "project_id": "nata-jp",
+    "accout_file_path": "{{env `GOOGLE_APPLICATION_CREDENTIALS`}}",
+    "image_family": "nata-sampleapp",
+    "image_name": "nata-sampleapp-{{uuid}}"
+  },
+  "builders": [{
+    "type": "googlecompute",
+    "account_file": "{{user `account_file_path`}}",
+    "project_id": "{{user `project_id`}}",
+    "source_image_family": "debian-8",
+    "zone": "asia-northeast1-a",
+    "ssh_username": "packer",
+    "image_family": "{{user `image_family`}}",
+    "image_name": "{{user `image_name`}}",
+    "preemptible": true
+  }], 
+  "provisioners": [
+  {
+    "type": "file",
+    "source": "app.systemd",
+    "destination": "/tmp/app.systemd"
+  },
+  {
+    "type": "file",
+    "source": "app.py",
+    "destination": "/tmp/app.py"
+  },
+  {
+    "type": "shell",
+    "execute_command": "sudo {{.Path}}",
+    "scripts": [
+      "install.sh"
+    ]
+  }
+  ]
+}
+

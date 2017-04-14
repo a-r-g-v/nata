@@ -1,0 +1,11 @@
+[Unit]
+Description=App
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /app/app.py
+TimeoutStopSec=5
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
