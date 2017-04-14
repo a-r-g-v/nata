@@ -1,22 +1,3 @@
-Example Application for nata
-===
-
-# Image Build
-
-First, nata users should be prepared image of google compute engine.  
-You can build the image for nata using packer.
-
-```
-packer build ./packer.json
-```
-
-
-
-Next, nata users should be prepared spec yaml file that includes provisioning and configuration plan. 
-
-See below for example of the spec yaml file.
-
-```
 name: test-app
 project: nata-jp
 zone: asia-northeast1-a
@@ -49,12 +30,4 @@ httpHealthCheck:
   checkIntervalSec: 3
   timeoutSec: 3
 LBtimeoutSec: 100
-```
 
-
-# Nata
-
-## Create Lb and App
-```
-nata service create ./nata.yaml
-```
