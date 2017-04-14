@@ -2,6 +2,7 @@
 import time
 import sys
 from .config import config
+from typing import Any
 
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy import create_engine
@@ -10,9 +11,11 @@ import logging
 
 # datastore
 def create_session(engine):
+    # typed: (Any) -> Any
     local = threading.local()
 
     def get_session():
+        # typed: () -> Any
         if hasattr(local, 'session'):
             return local.session
         local.session = scoped_session(
@@ -23,6 +26,7 @@ def create_session(engine):
 
 
 def init_engine(echo=False):
+    # type: (bool) -> Any
     return create_engine(config['schema'], encoding='utf-8', echo=echo)
 
 Session = create_session(init_engine())
