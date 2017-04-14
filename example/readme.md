@@ -45,7 +45,7 @@ autoscalingPolicy:
     utilizationTarget: 0.9
 enableCDN: False
 httpHealthCheck:
-  requestPath: /api/v1/
+  requestPath: /api/v1
   checkIntervalSec: 3
   timeoutSec: 3
 LBtimeoutSec: 100
