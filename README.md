@@ -29,15 +29,22 @@ enableCDN: False
 
 
 # command
+
+## Service
+
 ```
-nata app create <yaml-name>
-nata app list 
-nata app rolling <app-name>
-nata app delete <app-name>
-nata service create <yaml-name>
-nata service delete <lb-name>
+nata service create <yaml-to-path>
+nata service delete <service-name>
 nata service list
-nata service use <app-name>
+nata service switch <service-name> <app-name>
+nata service rolling <service-name>
+```
+
+## App
+```
+nata app create <yaml-to-path>
+nata app list 
+nata app delete <app-name>
 ```
 
 # testing

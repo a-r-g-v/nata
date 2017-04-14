@@ -45,6 +45,13 @@ def lb_factory(new_lb_name, spec, target_app, service):
 
 
 class ServiceUseCase(object):
+
+    @classmethod
+    def rolling(cls, name):
+        service = ServiceMapper.get(name)
+        app_resource = AppResource(service.get_primary_app())
+        app_resource.rolling()
+
     @classmethod
     def create(cls, spec):
         new_service = Service(spec.name, spec)
@@ -112,11 +119,6 @@ class ServiceUseCase(object):
 
 
 class AppUseCase(object):
-    @classmethod
-    def rolling(cls, name):
-        app = AppMapper.get(app_name)
-        app_resource = AppResource(app)
-        app_resource.rolling()
 
     @classmethod
     def create(cls, spec):

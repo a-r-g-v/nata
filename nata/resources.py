@@ -145,9 +145,12 @@ class AppResource(object):
         return cnt
 
     def wait_for_stable(self, lb, desire_stable_count):
-        while self.count_stable_instances(lb) != desire_stable_count:
-            logger.debug('wait some maneged instances until stable... desire: %d' % desire_stable_count)
-            time.sleep(5)
+        now_count = self.count_stable_instances(lb)
+        while now_count != desire_stable_count:
+            logger.debug('wait some maneged instances until stable... now: %d, desire: %d' % (now_count, desire_stable_count,))
+            print('wait instances until stable... now : %d, desire %d' % (now_count, desire_stable_count,))
+            now_count = self.count_stable_instances(lb)
+            time.sleep(20)
 
     def rolling(self, lb):
 
