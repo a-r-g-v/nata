@@ -153,7 +153,7 @@ class AppUseCase(object):
         for app in apps:
             is_primary = 'Yes' if app.primary else 'No'
             table.add_row([
-                app.name, app.service.name, is_primary, None, app.created_date
+                app.name, app.service.name, is_primary, app.spec.image_name, app.created_date
             ])
 
         print(table)

@@ -143,3 +143,11 @@ class Spec(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    @property
+    def image_name(self):
+        for disk in self.spec['properties'][0]['disks']:
+            if disk['boot'] is False:
+                continue
+            return disk['initializeParams'][0]['sourceImage']
+
